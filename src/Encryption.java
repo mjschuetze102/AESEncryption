@@ -151,7 +151,7 @@ public class Encryption {
             encoded = Base64.getDecoder().decode(encoded);
             IvParameterSpec ivSpec = new IvParameterSpec(Arrays.copyOf(encoded, encryption.BLOCK_LENGTH / 8)); // Division converts bits to bytes
             byte[] cipherText = Arrays.copyOfRange(encoded, encryption.BLOCK_LENGTH / 8, encoded.length);
-            cipherText = Base64.getEncoder().encode(cipherText); // Make cipherText readable
+            byte[] cipherTextB64 = Base64.getEncoder().encode(cipherText);
 
             System.out.println("-------------------------------------------");
             System.out.println("Init Vector:" + Arrays.toString(ivSpec.getIV()));
@@ -160,7 +160,7 @@ public class Encryption {
             System.out.println("Decrypted:  " + Arrays.toString(decoded));
             System.out.println("-------------------------------------------");
             System.out.println("Plain Text: " + plainText);
-            System.out.println("Encrypted:  " + new String(cipherText, StandardCharsets.UTF_8));
+            System.out.println("Encrypted:  " + new String(cipherTextB64, StandardCharsets.UTF_8));
             System.out.println("Decrypted:  " + new String(decoded, StandardCharsets.UTF_8));
             System.out.println("-------------------------------------------");
         }
