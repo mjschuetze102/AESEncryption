@@ -1,0 +1,122 @@
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Base64;
+
+/**
+ * Implements AES 128 Encryption
+ * Written by Michael Schuetze on 6/16/2019.
+ */
+public class Encryption {
+
+    private final int BLOCK_LENGTH = 128;
+    private final int KEY_LENGTH = 128; // 192, 256
+
+    private SecureRandom secRand = new SecureRandom();
+
+    /////////////////////////////////////////////////////
+    //              Class Functionality
+    /////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////
+    //              Getters and Setters
+    /////////////////////////////////////////////////////
+
+    /////////////////////////////////////////////////////
+    //               Helper Functions
+    /////////////////////////////////////////////////////
+
+    /**
+     * Generate Initialization Vector used in the first round of Encryption/Decryption
+     * @return initialization vector of size 16 bytes (128 bits)
+     */
+    private IvParameterSpec generateInitializationVector() {
+        byte[] iv = new byte[BLOCK_LENGTH / 8]; // Division converts bits to bytes
+        secRand.nextBytes(iv);
+        return new IvParameterSpec(iv);
+    }
+
+    /**
+     * Generates Secret Key used to Encrypt/ Decrypt data
+     * @return secret key of size 16 bytes (128 bits)
+     * @throws NoSuchAlgorithmException When AES instance isn't found
+     */
+    private SecretKey generateSecretKey() {
+        SecretKey secKey = null;
+        try {
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+            keyGen.init(KEY_LENGTH);
+            secKey = keyGen.generateKey();
+        } catch (NoSuchAlgorithmException nsae) {
+            System.out.println("Encryption Algorithm Not Found");
+        }
+
+        return secKey;
+    }
+
+    /**
+     * Generates Cipher for Encryption/ Decryption
+     * @param cipherMode - Cipher.ENCRYPT or Cipher.DECRYPT
+     * @param secKey - Secret Key used for the Encryption/ Decryption
+     * @param ivSpec - Initialization Vector used for the first round of Encryption/ Decryption
+     * @return cipher which is used to encrypt/ decrypt messages
+     */
+    private Cipher generateCipher(int cipherMode, SecretKey secKey, IvParameterSpec ivSpec) {
+        Cipher cipher = null;
+        try {
+            // AES - Advanced Encryption Standard
+            // CBC - Cipher Block Chaining
+            // PKCS5 - Padding Standard to pad data to an 8 byte (64 bit) block
+            //         1 byte missing: 0x01 is added
+            //         2 byte missing: 0x0202 is added
+            //         ...
+            //         8 byte missing: 0x0808080808080808 is added
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(cipherMode, secKey, ivSpec);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException nse) {
+            System.out.println("Encryption Algorithm / Padding Scheme Not Found");
+        } catch (InvalidKeyException | InvalidAlgorithmParameterException ie) {
+            System.out.println("Invalid Secret Key / Initialization Vector");
+        }
+
+        return cipher;
+    }
+
+    /////////////////////////////////////////////////////
+    //               Testing Purposes
+    /////////////////////////////////////////////////////
+
+    public static void main(String[] args) {
+        Encryption encryption = new Encryption();
+        IvParameterSpec ivSpec = encryption.generateInitializationVector();
+        SecretKey secKey = encryption.generateSecretKey();
+
+        Cipher encCipher = encryption.generateCipher(Cipher.ENCRYPT_MODE, secKey, ivSpec);
+        Cipher decCipher = encryption.generateCipher(Cipher.DECRYPT_MODE, secKey, ivSpec);
+
+        try {
+            String plainText = "Hello World!";
+            byte[] input = plainText.getBytes(StandardCharsets.UTF_8);
+            byte[] encoded = Base64.getEncoder().encode(encCipher.doFinal(input));
+            byte[] decoded = decCipher.doFinal(Base64.getDecoder().decode(encoded));
+
+            System.out.println("-------------------------------------------");
+            System.out.println("Init Vector:" + Arrays.toString(ivSpec.getIV())); //new String(ivSpec.getIV(), "UTF-8"));
+            System.out.println("Secret Key: " + Arrays.toString(secKey.getEncoded())); // new String(secKey.getEncoded(), "UTF-8"));
+            System.out.println("Encrypted:  " + Arrays.toString(encoded));
+            System.out.println("Decrypted:  " + Arrays.toString(decoded));
+            System.out.println("-------------------------------------------");
+            System.out.println("Plain Text: " + plainText);
+            System.out.println("Encrypted:  " + new String(encoded, StandardCharsets.UTF_8));
+            System.out.println("Decrypted:  " + new String(decoded, StandardCharsets.UTF_8));
+            System.out.println("-------------------------------------------");
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            System.out.println("Could Not Encode Input");
+        }
+    }
+}
