@@ -44,7 +44,6 @@ public class Encryption {
     /**
      * Generates Secret Key used to Encrypt/ Decrypt data
      * @return secret key of size 16 bytes (128 bits)
-     * @throws NoSuchAlgorithmException When AES instance isn't found
      */
     private SecretKey generateSecretKey() {
         SecretKey secKey = null;
@@ -81,6 +80,9 @@ public class Encryption {
         } catch (NoSuchAlgorithmException | NoSuchPaddingException nse) {
             System.out.println("Encryption Algorithm / Padding Scheme Not Found");
         } catch (InvalidKeyException | InvalidAlgorithmParameterException ie) {
+            // If you are receive this error after changing the KEY_LENGTH,
+            // download the Java Cryptography Extension to enable larger key sizes
+            // https://www.oracle.com/technetwork/java/javase/downloads/jce-all-download-5170447.html
             System.out.println("Invalid Secret Key / Initialization Vector");
         }
 
@@ -116,7 +118,7 @@ public class Encryption {
             System.out.println("Decrypted:  " + new String(decoded, StandardCharsets.UTF_8));
             System.out.println("-------------------------------------------");
         } catch (IllegalBlockSizeException | BadPaddingException e) {
-            System.out.println("Could Not Encode Input");
+            System.out.println("Could Not Encode/Decode Message");
         }
     }
 }
