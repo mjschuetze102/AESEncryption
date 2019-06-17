@@ -142,24 +142,27 @@ public class Encryption {
         SecretKey secKey = encryption.secKey;
 
         String plainText = "Hello World!";
-        byte[] encoded = encryption.encode(plainText);
-        byte[] decoded = encryption.decode(encoded);
 
-        // Remove initialization vector from the front of the cipher text
-        encoded = Base64.getDecoder().decode(encoded);
-        IvParameterSpec ivSpec = new IvParameterSpec(Arrays.copyOf(encoded, encryption.BLOCK_LENGTH / 8)); // Division converts bits to bytes
-        byte[] cipherText = Arrays.copyOfRange(encoded, encryption.BLOCK_LENGTH / 8, encoded.length);
-        cipherText = Base64.getEncoder().encode(cipherText); // Make cipherText readable
+        for (int rounds = 0; rounds < 3; rounds++) {
+            byte[] encoded = encryption.encode(plainText);
+            byte[] decoded = encryption.decode(encoded);
 
-        System.out.println("-------------------------------------------");
-        System.out.println("Init Vector:" + Arrays.toString(ivSpec.getIV()));
-        System.out.println("Secret Key: " + Arrays.toString(secKey.getEncoded()));
-        System.out.println("Encrypted:  " + Arrays.toString(cipherText));
-        System.out.println("Decrypted:  " + Arrays.toString(decoded));
-        System.out.println("-------------------------------------------");
-        System.out.println("Plain Text: " + plainText);
-        System.out.println("Encrypted:  " + new String(cipherText, StandardCharsets.UTF_8));
-        System.out.println("Decrypted:  " + new String(decoded, StandardCharsets.UTF_8));
-        System.out.println("-------------------------------------------");
+            // Remove initialization vector from the front of the cipher text
+            encoded = Base64.getDecoder().decode(encoded);
+            IvParameterSpec ivSpec = new IvParameterSpec(Arrays.copyOf(encoded, encryption.BLOCK_LENGTH / 8)); // Division converts bits to bytes
+            byte[] cipherText = Arrays.copyOfRange(encoded, encryption.BLOCK_LENGTH / 8, encoded.length);
+            cipherText = Base64.getEncoder().encode(cipherText); // Make cipherText readable
+
+            System.out.println("-------------------------------------------");
+            System.out.println("Init Vector:" + Arrays.toString(ivSpec.getIV()));
+            System.out.println("Secret Key: " + Arrays.toString(secKey.getEncoded()));
+            System.out.println("Encrypted:  " + Arrays.toString(cipherText));
+            System.out.println("Decrypted:  " + Arrays.toString(decoded));
+            System.out.println("-------------------------------------------");
+            System.out.println("Plain Text: " + plainText);
+            System.out.println("Encrypted:  " + new String(cipherText, StandardCharsets.UTF_8));
+            System.out.println("Decrypted:  " + new String(decoded, StandardCharsets.UTF_8));
+            System.out.println("-------------------------------------------");
+        }
     }
 }
