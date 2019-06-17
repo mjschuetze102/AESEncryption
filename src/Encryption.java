@@ -18,10 +18,54 @@ public class Encryption {
     private final int KEY_LENGTH = 128; // 192, 256
 
     private SecureRandom secRand = new SecureRandom();
+    private SecretKey secKey;
+
+    public Encryption() {
+        // Only need to generate secret key once
+        secKey = generateSecretKey();
+    }
 
     /////////////////////////////////////////////////////
     //              Class Functionality
     /////////////////////////////////////////////////////
+
+    public byte[] encode(String plainText) {
+        // Need to generate initialization vector for every encoding
+        IvParameterSpec ivSpec = generateInitializationVector();
+        Cipher cipher = generateCipher(Cipher.ENCRYPT_MODE, secKey, ivSpec);
+
+        try {
+            byte[] input = plainText.getBytes(StandardCharsets.UTF_8);
+            byte[] encoded = cipher.doFinal(input);
+
+            // Attach the initialization vector to the encoding so the decoding process has access to it
+            byte[] ivAndEncoded = Arrays.copyOf(ivSpec.getIV(), ivSpec.getIV().length + encoded.length);
+            System.arraycopy(encoded, 0, ivAndEncoded, ivSpec.getIV().length, encoded.length);
+            return Base64.getEncoder().encode(ivAndEncoded);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            System.out.println("Could Not Encode Message");
+        }
+
+        return null;
+    }
+
+    public byte[] decode(byte[] ivAndCipher) {
+        ivAndCipher = Base64.getDecoder().decode(ivAndCipher);
+
+        // Remove initialization vector from the front of the cipher text
+        IvParameterSpec ivSpec = new IvParameterSpec(Arrays.copyOf(ivAndCipher, BLOCK_LENGTH / 8)); // Division converts bits to bytes
+        byte[] cipherText = Arrays.copyOfRange(ivAndCipher, BLOCK_LENGTH / 8, ivAndCipher.length);
+
+        Cipher cipher = generateCipher(Cipher.DECRYPT_MODE, secKey, ivSpec);
+
+        try {
+            return cipher.doFinal(cipherText);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            System.out.println("Could Not Decode Message");
+        }
+
+        return null;
+    }
 
     /////////////////////////////////////////////////////
     //              Getters and Setters
@@ -95,30 +139,25 @@ public class Encryption {
 
     public static void main(String[] args) {
         Encryption encryption = new Encryption();
-        IvParameterSpec ivSpec = encryption.generateInitializationVector();
-        SecretKey secKey = encryption.generateSecretKey();
+        SecretKey secKey = encryption.secKey;
 
-        Cipher encCipher = encryption.generateCipher(Cipher.ENCRYPT_MODE, secKey, ivSpec);
-        Cipher decCipher = encryption.generateCipher(Cipher.DECRYPT_MODE, secKey, ivSpec);
+        String plainText = "Hello World!";
+        byte[] encoded = encryption.encode(plainText);
+        byte[] decoded = encryption.decode(encoded);
 
-        try {
-            String plainText = "Hello World!";
-            byte[] input = plainText.getBytes(StandardCharsets.UTF_8);
-            byte[] encoded = Base64.getEncoder().encode(encCipher.doFinal(input));
-            byte[] decoded = decCipher.doFinal(Base64.getDecoder().decode(encoded));
+        // Remove initialization vector from the front of the cipher text
+        IvParameterSpec ivSpec = new IvParameterSpec(Arrays.copyOf(encoded, encryption.BLOCK_LENGTH / 8)); // Division converts bits to bytes
+        byte[] cipherText = Arrays.copyOfRange(encoded, encryption.BLOCK_LENGTH / 8, encoded.length);
 
-            System.out.println("-------------------------------------------");
-            System.out.println("Init Vector:" + Arrays.toString(ivSpec.getIV())); //new String(ivSpec.getIV(), "UTF-8"));
-            System.out.println("Secret Key: " + Arrays.toString(secKey.getEncoded())); // new String(secKey.getEncoded(), "UTF-8"));
-            System.out.println("Encrypted:  " + Arrays.toString(encoded));
-            System.out.println("Decrypted:  " + Arrays.toString(decoded));
-            System.out.println("-------------------------------------------");
-            System.out.println("Plain Text: " + plainText);
-            System.out.println("Encrypted:  " + new String(encoded, StandardCharsets.UTF_8));
-            System.out.println("Decrypted:  " + new String(decoded, StandardCharsets.UTF_8));
-            System.out.println("-------------------------------------------");
-        } catch (IllegalBlockSizeException | BadPaddingException e) {
-            System.out.println("Could Not Encode/Decode Message");
-        }
+        System.out.println("-------------------------------------------");
+        System.out.println("Init Vector:" + Arrays.toString(ivSpec.getIV())); //new String(ivSpec.getIV(), "UTF-8"));
+        System.out.println("Secret Key: " + Arrays.toString(secKey.getEncoded())); // new String(secKey.getEncoded(), "UTF-8"));
+        System.out.println("Encrypted:  " + Arrays.toString(encoded));
+        System.out.println("Decrypted:  " + Arrays.toString(decoded));
+        System.out.println("-------------------------------------------");
+        System.out.println("Plain Text: " + plainText);
+        System.out.println("Encrypted:  " + new String(encoded, StandardCharsets.UTF_8));
+        System.out.println("Decrypted:  " + new String(decoded, StandardCharsets.UTF_8));
+        System.out.println("-------------------------------------------");
     }
 }
