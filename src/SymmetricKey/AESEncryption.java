@@ -1,3 +1,5 @@
+package SymmetricKey;
+
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import java.nio.charset.StandardCharsets;
@@ -10,9 +12,17 @@ import java.util.Base64;
 
 /**
  * Implements AES 128 Encryption
+ * Private key encryption
+ *   Fast and efficient algorithm
+ *   Key must remain a secret, and both parties require the key
+ * Uses Cipher Block Chaining (CBC)
+ *   Block C depends not only on the outcome of Block B, but also Block A
+ * Uses a random initialization vector to xor with the first Block of data
+ *   This causes the same plaintext to output a different cipher text
+ *   Does not have to remain secret as it should only be used once
  * Written by Michael Schuetze on 6/16/2019.
  */
-public class Encryption {
+public class AESEncryption {
 
     private final int BLOCK_LENGTH = 128;
     private final int KEY_LENGTH = 128; // 192, 256
@@ -20,7 +30,7 @@ public class Encryption {
     private SecureRandom secRand = new SecureRandom();
     private SecretKey secKey;
 
-    public Encryption() {
+    public AESEncryption() {
         // Only need to generate secret key once
         secKey = generateSecretKey();
     }
@@ -138,7 +148,7 @@ public class Encryption {
     /////////////////////////////////////////////////////
 
     public static void main(String[] args) {
-        Encryption encryption = new Encryption();
+        AESEncryption encryption = new AESEncryption();
         SecretKey secKey = encryption.secKey;
 
         String plainText = "Hello World!";
