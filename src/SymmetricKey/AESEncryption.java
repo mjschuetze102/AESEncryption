@@ -15,11 +15,16 @@ import java.util.Base64;
  * Private key encryption
  *   Fast and efficient algorithm
  *   Key must remain a secret, and both parties require the key
- * Uses Cipher Block Chaining (CBC)
- *   Block C depends not only on the outcome of Block B, but also Block A
+ * Uses Cipher Block Chaining (CBC) over Electronic CodeBook (ECB)
+ *   CBC: Block C depends not only on the outcome of Block B, but also Block A
+ *     i.e. if Block C == Block A, the outputs will still be different
+ *   ECB: Each Block with the same values, have the same encrypted output
  * Uses a random initialization vector to xor with the first Block of data
  *   This causes the same plaintext to output a different cipher text
  *   Does not have to remain secret as it should only be used once
+ * This code is susceptible to Padding Oracle
+ *   Padding Oracle: https://www.youtube.com/watch?v=aH4DENMN_O4 @10:00
+ *     To mitigate, use Message Authentication Code (MAC)
  * Written by Michael Schuetze on 6/16/2019.
  */
 public class AESEncryption {
