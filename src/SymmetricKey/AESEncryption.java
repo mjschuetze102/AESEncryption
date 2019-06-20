@@ -152,6 +152,18 @@ public class AESEncryption {
     //               Testing Purposes
     /////////////////////////////////////////////////////
 
+    private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    private static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 3];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 3] = hexArray[v >>> 4];
+            hexChars[j * 3 + 1] = hexArray[v & 0x0F];
+            hexChars[j * 3 + 2] = ' ';
+        }
+        return new String(hexChars);
+    }
+
     public static void main(String[] args) {
         AESEncryption encryption = new AESEncryption();
         SecretKey secKey = encryption.secKey;
@@ -169,14 +181,14 @@ public class AESEncryption {
             byte[] cipherTextB64 = Base64.getEncoder().encode(cipherText);
 
             System.out.println("-------------------------------------------");
-            System.out.println("Init Vector:" + Arrays.toString(ivSpec.getIV()));
-            System.out.println("Secret Key: " + Arrays.toString(secKey.getEncoded()));
-            System.out.println("Encrypted:  " + Arrays.toString(cipherText));
-            System.out.println("Decrypted:  " + Arrays.toString(decoded));
+            System.out.println("Init Vector: " + bytesToHex(ivSpec.getIV()));
+            System.out.println("Secret Key:  " + bytesToHex(secKey.getEncoded()));
+            System.out.println("Encrypted:   " + bytesToHex(cipherText));
+            System.out.println("Decrypted:   " + bytesToHex(decoded));
             System.out.println("-------------------------------------------");
-            System.out.println("Plain Text: " + plainText);
-            System.out.println("Encrypted:  " + new String(cipherTextB64, StandardCharsets.UTF_8));
-            System.out.println("Decrypted:  " + new String(decoded, StandardCharsets.UTF_8));
+            System.out.println("Plain Text:  " + plainText);
+            System.out.println("Encrypted:   " + new String(cipherTextB64, StandardCharsets.UTF_8));
+            System.out.println("Decrypted:   " + new String(decoded, StandardCharsets.UTF_8));
             System.out.println("-------------------------------------------");
         }
     }
