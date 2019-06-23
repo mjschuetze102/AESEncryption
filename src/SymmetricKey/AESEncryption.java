@@ -64,7 +64,7 @@ public class AESEncryption {
         return null;
     }
 
-    public byte[] decode(byte[] ivAndCipher) {
+    public String decode(byte[] ivAndCipher) {
         ivAndCipher = Base64.getDecoder().decode(ivAndCipher);
 
         // Remove initialization vector from the front of the cipher text
@@ -74,7 +74,7 @@ public class AESEncryption {
         Cipher cipher = generateCipher(Cipher.DECRYPT_MODE, secKey, ivSpec);
 
         try {
-            return cipher.doFinal(cipherText);
+            return new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
             System.out.println("Could Not Decode Message");
         }
@@ -172,7 +172,7 @@ public class AESEncryption {
 
         for (int rounds = 0; rounds < 3; rounds++) {
             byte[] encoded = encryption.encode(plainText);
-            byte[] decoded = encryption.decode(encoded);
+            String decoded = encryption.decode(encoded);
 
             // Remove initialization vector from the front of the cipher text
             encoded = Base64.getDecoder().decode(encoded);
@@ -184,11 +184,11 @@ public class AESEncryption {
             System.out.println("Init Vector: " + bytesToHex(ivSpec.getIV()));
             System.out.println("Secret Key:  " + bytesToHex(secKey.getEncoded()));
             System.out.println("Encrypted:   " + bytesToHex(cipherText));
-            System.out.println("Decrypted:   " + bytesToHex(decoded));
+            System.out.println("Decrypted:   " + bytesToHex(decoded.getBytes(StandardCharsets.UTF_8)));
             System.out.println("-------------------------------------------");
             System.out.println("Plain Text:  " + plainText);
             System.out.println("Encrypted:   " + new String(cipherTextB64, StandardCharsets.UTF_8));
-            System.out.println("Decrypted:   " + new String(decoded, StandardCharsets.UTF_8));
+            System.out.println("Decrypted:   " + decoded);
             System.out.println("-------------------------------------------");
         }
     }
