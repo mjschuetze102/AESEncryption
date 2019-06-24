@@ -44,6 +44,11 @@ public class AESEncryption {
     //              Class Functionality
     /////////////////////////////////////////////////////
 
+    /**
+     * Encrypts an plaintext message
+     * @param plainText - message to be encrypted
+     * @return 16 byte initialization vector concatenated to the front of the cipher text
+     */
     public byte[] encode(String plainText) {
         // Need to generate initialization vector for every encoding
         IvParameterSpec ivSpec = generateInitializationVector();
@@ -64,6 +69,11 @@ public class AESEncryption {
         return null;
     }
 
+    /**
+     * Decrypts an encoded message
+     * @param ivAndCipher - 16 byte initialization vector concatenated to the front of the cipher text
+     * @return String containing the original message sent to the server
+     */
     public String decode(byte[] ivAndCipher) {
         ivAndCipher = Base64.getDecoder().decode(ivAndCipher);
 
