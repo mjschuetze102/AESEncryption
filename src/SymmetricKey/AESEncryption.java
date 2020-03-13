@@ -72,7 +72,7 @@ public class AESEncryption {
     /**
      * Decrypts an encoded message
      * @param ivAndCipher - 16 byte initialization vector concatenated to the front of the cipher text
-     * @return String containing the original message sent to the server
+     * @return String containing the original encrypted message
      */
     public String decode(byte[] ivAndCipher) {
         ivAndCipher = Base64.getDecoder().decode(ivAndCipher);
