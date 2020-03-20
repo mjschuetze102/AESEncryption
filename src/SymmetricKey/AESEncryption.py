@@ -17,6 +17,8 @@ Written by Michael Schuetze on 3/13/2020.
 """
 from base64 import b64encode, b64decode
 
+# Will need to download pycryptodome
+# https://pypi.org/project/pycryptodome/
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
